@@ -4,10 +4,31 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e0eee6c3-6100-477e-8962-b5df6e6301bd" name="Changes" comment="Introduction">
+    <list default="true" id="e0eee6c3-6100-477e-8962-b5df6e6301bd" name="Changes" comment="multiple download">
+      <change afterPath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/SupportBA.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/GetPoWeb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/GetPoWeb.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/htmls/http___grkatpo.sk__schematizmus_show_farnost_id_3.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/BJ.lst/Andrejov_.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/BJ.lst/Bardejov-Dru_ba.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/BJ.lst/Bardejov-Vinbarg.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/BJ.lst/Bardejov.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/BJ.lst/Becherov.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/BJ.lst/Belove_a.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/BJ.lst/Chme_ov_.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/BJ.lst/Mikul__ov_.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/BJ.lst/Ortu_ov_.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/BJ.lst/Re_ov.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/BJ.lst/_ari_sk___ierne.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/CM.lst/Bansk_.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/CM.lst/Cabov.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/CM.lst/Davidov.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/CM.lst/Dlh__Kl_ovo.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/CM.lst/Juskova_Vo_a.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/CM.lst/Sa_urov.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/CM.lst/Se_ovsk__Polianka.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/CM.lst/Vranov_nad_Top_ou-_emern_.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/CM.lst/Z_mutov.html" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,11 +45,11 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;
   }
-}]]></component>
+}</component>
   <component name="GithubPullRequestsUISettings">
     <option name="selectedUrlAndAccountId">
       <UrlAndAccount>
@@ -52,15 +73,16 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "C:/Program Files/Projekty/Schematizmus",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0"
   }
-}</component>
+}]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -77,11 +99,19 @@
       <option name="project" value="LOCAL" />
       <updated>1684496410761</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="multiple download">
+      <created>1684783218691</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1684783218691</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Introduction" />
-    <option name="LAST_COMMIT_MESSAGE" value="Introduction" />
+    <MESSAGE value="multiple download" />
+    <option name="LAST_COMMIT_MESSAGE" value="multiple download" />
   </component>
 </project>

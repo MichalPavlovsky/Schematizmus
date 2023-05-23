@@ -11,16 +11,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class GetPoWeb {
-    private static boolean setTrue = true;
-
-    public static boolean isSetTrue() {
-        return setTrue;
-    }
-
-    public static void setSetTrue(boolean setTrue) {
-        GetPoWeb.setTrue = setTrue;
-    }
-
     private static int num = 0;
 
     public static int getNum() {
@@ -32,15 +22,27 @@ public class GetPoWeb {
     }
 
     public static void main(String[] args) {
-
         ArrayList<String> dekanat = new ArrayList<>();
         dekanat.add("CM.lst");
         dekanat.add("BJ.lst");
-
+        dekanat.add("GI.lst");
+        dekanat.add("HA.lst");
+        dekanat.add("HR.lst");
+        dekanat.add("HU.lst");
+        dekanat.add("ML.lst");
+        dekanat.add("OR.lst");
+        dekanat.add("PO.lst");
+        dekanat.add("PP.lst");
+        dekanat.add("SB.lst");
+        dekanat.add("SK.lst");
+        dekanat.add("SL.lst");
+        dekanat.add("SN.lst");
+        dekanat.add("SP.lst");
+        dekanat.add("VT.lst");
         String nameofDekanat;
-
-        while (isSetTrue()) {
+        for( int i = 0; i < dekanat.size(); i++) {
             nameofDekanat = dekanat.get(getNum());
+            setNum(1);
             String filePlace = "src/main/resources/PO/" + nameofDekanat;
             try (BufferedReader reader = new BufferedReader(new FileReader(filePlace))) {
                 String line;
@@ -49,10 +51,9 @@ public class GetPoWeb {
                     if (parts.length >= 2) {
                         String url = parts[0];
                         String fileName = parts[1] + ".html";
-                        String saveDirectory = "src/main/java/sk/pavlovsky/utils/webs/"+nameofDekanat;
+                        String saveDirectory = "src/main/resources/webs/"+nameofDekanat;
                         try {
                             Document doc = Jsoup.connect(url).get();
-
                             Path directoryPath = Paths.get(saveDirectory);
                             if (!Files.exists(directoryPath)) {
                                 Files.createDirectories(directoryPath);
@@ -73,10 +74,6 @@ public class GetPoWeb {
                 }
             } catch (IOException e) {
                 System.out.println("Vyskytla sa chyba pri čítaní zo súboru: " + e.getMessage());
-            }
-            setNum(1);
-            if (getNum() == dekanat.size()) {
-                setSetTrue(false);
             }
         }
     }
