@@ -4,6 +4,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,52 +21,39 @@ public class GetPoWeb {
     public static void setNum(int num) {
         GetPoWeb.num = getNum() + num;
     }
-
-    public static void main(String[] args) {
-        ArrayList<String> dekanat = new ArrayList<>();
-        dekanat.add("CM.lst");
-        dekanat.add("BJ.lst");
-        dekanat.add("GI.lst");
-        dekanat.add("HA.lst");
-        dekanat.add("HR.lst");
-        dekanat.add("HU.lst");
-        dekanat.add("ML.lst");
-        dekanat.add("OR.lst");
-        dekanat.add("PO.lst");
-        dekanat.add("PP.lst");
-        dekanat.add("SB.lst");
-        dekanat.add("SK.lst");
-        dekanat.add("SL.lst");
-        dekanat.add("SN.lst");
-        dekanat.add("SP.lst");
-        dekanat.add("VT.lst");
+    public void downloadPoWebs(){
+        ArrayList<String> district = new ArrayList<>();
+        district.add("CM.lst");district.add("BJ.lst");district.add("GI.lst");district.add("HA.lst");district.add("HR.lst");district.add("HU.lst");
+        district.add("ML.lst");district.add("OR.lst");district.add("PO.lst");district.add("PP.lst");district.add("SB.lst");district.add("SK.lst");
+        district.add("SL.lst");district.add("SN.lst");district.add("SP.lst");district.add("VT.lst");
         String nameofDekanat;
-        for( int i = 0; i < dekanat.size(); i++) {
-            nameofDekanat = dekanat.get(getNum());
+        for( int i = 0; i < district.size(); i++) {
+            nameofDekanat = district.get(getNum());
             setNum(1);
-            String filePlace = "src/main/resources/PO/" + nameofDekanat;
-            try (BufferedReader reader = new BufferedReader(new FileReader(filePlace))) {
+            String filePlace = "PO/" + nameofDekanat;
+            URL url = getClass().getClassLoader().getResource(filePlace);
+            if (url == null) {
+                throw new RuntimeException("There is no such file: " + filePlace);}
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     String[] parts = line.split(" ", 2);
                     if (parts.length >= 2) {
-                        String url = parts[0];
+                        String web = parts[0];
                         String fileName = parts[1] + ".html";
-                        String saveDirectory = "src/main/resources/webs/"+nameofDekanat;
+                        String saveDirectory = "resources/webs/"+nameofDekanat;
                         try {
-                            Document doc = Jsoup.connect(url).get();
+                            Document doc = Jsoup.connect(web).get();
                             Path directoryPath = Paths.get(saveDirectory);
                             if (!Files.exists(directoryPath)) {
                                 Files.createDirectories(directoryPath);
                             }
-
-                            String sanitizedFileName = fileName.replaceAll("[^a-zA-Z0-9-_\\.]", "_");
-                            Path filePath = Paths.get(saveDirectory, sanitizedFileName);
+                            Path filePath = Paths.get(saveDirectory, fileName);
                             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath.toString()), StandardCharsets.UTF_8));
                             writer.write(doc.html());
                             writer.close();
 
-                            System.out.println("Stránka bola úspešne stiahnutá a uložená: " + url);
+                            System.out.println("Stránka bola úspešne stiahnutá a uložená: " + web);
                         } catch (IOException e) {
                             System.out.println("Vyskytla sa chyba pri stahovaní a ukladaní stránky: " + url);
                             e.printStackTrace();
@@ -76,5 +64,9 @@ public class GetPoWeb {
                 System.out.println("Vyskytla sa chyba pri čítaní zo súboru: " + e.getMessage());
             }
         }
+    }
+    public static void main(String[] args) {
+        GetPoWeb getPoWeb = new GetPoWeb();
+        getPoWeb.downloadPoWebs();
     }
 }
