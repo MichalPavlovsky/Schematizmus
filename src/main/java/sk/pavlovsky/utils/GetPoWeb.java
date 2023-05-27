@@ -41,7 +41,7 @@ public class GetPoWeb {
                     if (parts.length >= 2) {
                         String web = parts[0];
                         String fileName = parts[1] + ".html";
-                        String saveDirectory = "resources/webs/"+nameofDekanat;
+                        String saveDirectory = "src/main/resources/webs/"+nameofDekanat;
                         try {
                             Document doc = Jsoup.connect(web).get();
                             Path directoryPath = Paths.get(saveDirectory);
@@ -65,6 +65,7 @@ public class GetPoWeb {
             }
         }
     }
+
     public static void main(String[] args) {
         GetPoWeb getPoWeb = new GetPoWeb();
         getPoWeb.downloadPoWebs();
