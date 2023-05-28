@@ -109,12 +109,14 @@ public class Parish {
                 String nameOfFarar2 = nameOfFarar1.replaceAll("<[^>]+>","");
                 System.out.println(nameOfFarar2);
                 setNameofSpravca(nameOfFarar2);
+                setFunctionOfAdministrator(2);
             } else if (nameOfSpravca.isPresent()) {
                 String nameOfSpravcaa = nameOfSpravca.get();
                 String nameOfSpravca1 = nameOfSpravcaa.replaceAll(".*</strong>","");
                 String nameOfSpravca2 = nameOfSpravca1.replaceAll("<[^>]+>","");
                 System.out.println(nameOfSpravca2);
                 setNameofSpravca(nameOfSpravca2);
+                setFunctionOfAdministrator(1);
             }
             String nameOfParish = nameOfFarnost.get();
             String nameOfParish1 = nameOfParish.replaceAll(".*<span[^>]*>","");
