@@ -1,5 +1,8 @@
 package sk.pavlovsky.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -29,14 +32,28 @@ public class Parish {
     }
 
     private ArrayList<String> filialky;
+    private ArrayList<String> naOdpocinku;
     private ArrayList<String> jurisdikcneUzemie;
     private String nameofSpravca;
     private ArrayList<String> kaplani;
     private ArrayList<String> vypomocnyDuchovny;
+    private ArrayList<String> duchovnySpravca;
 
     public Parish() {
         this.filialky=new ArrayList<>();
         this.jurisdikcneUzemie = new ArrayList<>();
+        this.vypomocnyDuchovny = new ArrayList<>();
+        this.duchovnySpravca = new ArrayList<>();
+        this.naOdpocinku = new ArrayList<>();
+        this.kaplani = new ArrayList<>();
+    }
+
+    public ArrayList<String> getDuchovnySpravca() {
+        return duchovnySpravca;
+    }
+
+    public void setDuchovnySpravca(ArrayList<String> duchovnySpravca) {
+        this.duchovnySpravca = duchovnySpravca;
     }
 
     public String getNameOfVillage() {
@@ -61,6 +78,14 @@ public class Parish {
 
     public void setJurisdikcneUzemie(ArrayList<String> jurisdikcneUzemie) {
         this.jurisdikcneUzemie = jurisdikcneUzemie;
+    }
+
+    public ArrayList<String> getNaOdpocinku() {
+        return naOdpocinku;
+    }
+
+    public void setNaOdpocinku(ArrayList<String> naOdpocinku) {
+        this.naOdpocinku = naOdpocinku;
     }
 
     public String getNameofSpravca() {
@@ -186,69 +211,97 @@ public class Parish {
             }
             String html = content.toString();
             Document doc = Jsoup.parse(html);
-
-            Elements filialkyDivs = doc.select("div.container.clearfix h1");
-            Element ele = filialkyDivs.get(0);
-            String nameOfParish = ele.toString();
-            String nameOfParish1 = nameOfParish.replaceAll("<[^>]*>", "");
-            String nameOfParish2 = nameOfParish1.replaceAll("Farnosť ", "");
-            setNameOfVillage(nameOfParish2);
-            System.out.println(nameOfParish2);
-            System.out.println(nameOfParish);
-            System.out.println("s");
-            Elements s = filialkyDivs.tagName(filialkyDivs.text());
-
+//          Meno farnosti
+            Elements nameOfParishElements = doc.select("div.container.clearfix h1");
+            String nameOfParish = nameOfParishElements.text();
+            String nameOfParish1 = nameOfParish.replaceAll("Farnosť ", "");
+            setNameOfVillage(nameOfParish1);
+            System.out.println(nameOfParish1);
+//          Meno knaza
+            Elements nameofAdministratorElements = doc.select("div.entry-title h4 a");
+            String nameofAdministrator = nameofAdministratorElements.get(0).text();
+            setNameofSpravca(nameofAdministrator);
+            System.out.println(nameofAdministrator);
+//          Filialky
+            Elements nameofFilialkyElements = doc.select("div#post-list-footer h4");
+            String nameOfFilialky = nameofFilialkyElements.toString();
+            String nameOfFilialky1 = nameOfFilialky.replaceAll("<[^>]*>","");
+            List<String> collect = Arrays.stream(nameOfFilialky1.split("\n")).collect(Collectors.toList());
+            System.out.println(collect);
+//          Funkcia knaza
+            Elements nameOfFunctionElements = doc.select("div.widget.clearfix");
+            Element needPartoOfHtml = nameOfFunctionElements.get(1);
+            String htmls = needPartoOfHtml.toString();
+            Document docu = Jsoup.parse(htmls);
+            Elements nameOfPriests = docu.select("div.entry-title h4 a");
+            Elements function = docu.select("div.entry-c li.color");
+            for (int i=0;  i< function.size(); i++){
+                String nameOfFunction = function.get(i).text();
+                if (nameOfFunction.contains("farár")) {
+                    setNameofSpravca(nameOfPriests.get(i).text());
+                }else if (nameOfFunction.contains("výpomocný duchovný")) {
+                    this.vypomocnyDuchovny.add(nameOfPriests.get(i).text());
+                }else if (nameOfFunction.contains("duchovný správca")) {
+                    this.duchovnySpravca.add(nameOfPriests.get(i).text());
+                }else if (nameOfFunction.contains("kaplán")) {
+                    this.kaplani.add(nameOfPriests.get(i).text());
+                }else if (nameOfFunction.contains("na odpočinku")) {
+                    this.naOdpocinku.add(nameOfPriests.get(i).text());
+                }
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
 
     }
-//    public void setNewInformation() {
-//        // Cesta k JSON súboru
-//        String jsonFilePath = "src/main/resources/JSONview/out.json";
-//
-//        try {
-//            // Vytvorenie ObjectMapperu
-//            ObjectMapper objectMapper = new ObjectMapper();
-//
-//            // Načítanie JSON súboru
-//            JsonNode rootNode = objectMapper.readTree(new File(jsonFilePath));
-//
-//            // Prístup k prvemu objektu vo vnútri poľa
-//            JsonNode json = rootNode.get(0);
-//
-//            // Doplnenie informácií o farárovi do farnosti "Andrejová"
-//            JsonNode dekanaty = json.get("dekanaty");
-//            for (JsonNode dekanat : dekanaty) {
-//                JsonNode farnosti = dekanat.get("farnosti");
-//                for (JsonNode farnost : farnosti) {
-//                    String farnostName = farnost.get("farnost").asText();
-//                    if (farnostName.equals("Bačkov")) {
-//                        String farar = "Anton Vesely"; // Tu zadajte meno farára
-//
-//                        // Doplnenie informácie o farárovi
-//                        ((ObjectNode) farnost).put("farar", farar);
-//                    }
-//                }
-//            }
-//
-//            // Uloženie zmenených informácií späť do JSON súboru
-//            objectMapper.writeValue(new File(jsonFilePath), rootNode);
-//
-//            System.out.println("Informácie o farárovi v farnosti 'Andrejová' boli úspešne doplnené.");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
+    public void setNewInformation() {
+        // Cesta k JSON súboru
+        String jsonFilePath = "src/main/resources/JSONview/out.json";
+
+        try {
+            // Vytvorenie ObjectMapperu
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            // Načítanie JSON súboru
+            JsonNode rootNode = objectMapper.readTree(new File(jsonFilePath));
+
+            // Prístup k prvemu objektu vo vnútri poľa
+            JsonNode json = rootNode.get(0);
+
+            // Doplnenie informácií o farárovi do farnosti "Andrejová"
+            JsonNode dekanaty = json.get("dekanaty");
+            for (JsonNode dekanat : dekanaty) {
+                JsonNode farnosti = dekanat.get("farnosti");
+                for (JsonNode farnost : farnosti) {
+                    String farnostName = farnost.get("farnost").asText();
+                    if (farnostName.equals("Bačkov")) {
+                        String farar = "Anton Vesely"; // Tu zadajte meno farára
+
+                        // Doplnenie informácie o farárovi
+                        ((ObjectNode) farnost).put("farar", farar);
+                    }
+                }
+            }
+
+            // Uloženie zmenených informácií späť do JSON súboru
+            objectMapper.writeValue(new File(jsonFilePath), rootNode);
+
+            System.out.println("Informácie o farárovi v farnosti 'Andrejová' boli úspešne doplnené.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
     public static void main(String[] args) {
         Parish parish = new Parish();
-//        parish.parseInfoKe("Bačkov");
-        parish.parseInformationPo("SK","Hrabovčík");
+        parish.parseInfoKe("Košice-Západ");
+//        parish.parseInformationPo("SK","Hrabovčík");
 //        parish.setNewInformation();
+
+
     }
     }
 
