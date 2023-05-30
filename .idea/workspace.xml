@@ -4,12 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e0eee6c3-6100-477e-8962-b5df6e6301bd" name="Changes" comment="transformer of parishhead">
+    <list default="true" id="e0eee6c3-6100-477e-8962-b5df6e6301bd" name="Changes" comment="KE info parser">
       <change afterPath="$PROJECT_DIR$/src/main/resources/BA/hallEparchy.lst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/KE/KE.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/GetKeWeb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/GetKeWeb.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/GetPoWeb.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/GetPoWeb.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/Parish.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/Parish.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/Parser.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/webs/BJ.lst/Andrejov_.html" beforeDir="false" />
@@ -159,7 +159,14 @@
       <option name="project" value="LOCAL" />
       <updated>1685291714314</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="KE info parser">
+      <created>1685363107365</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1685363107365</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -182,6 +189,7 @@
     <MESSAGE value="help with jsoup and regex" />
     <MESSAGE value="parser for PO parish" />
     <MESSAGE value="transformer of parishhead" />
-    <option name="LAST_COMMIT_MESSAGE" value="transformer of parishhead" />
+    <MESSAGE value="KE info parser" />
+    <option name="LAST_COMMIT_MESSAGE" value="KE info parser" />
   </component>
 </project>

@@ -1,8 +1,6 @@
 package sk.pavlovsky.utils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,10 +18,64 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Parser {
-    public void parseInformationPo(String dekanat, String nameOfVillage) {
+
+    public List<String> nameOfHtmlToList(String eparchia, String dekanat){
+        List<String> listOfParishesHtml = new ArrayList<>();
+        String filePlace = "PO/" + dekanat + ".lst";
+        if (eparchia.equals("PO")) {
+            filePlace = "PO/" + dekanat + ".lst";
+        } else if (eparchia.equals("KE")) {
+            filePlace = "KE/" + dekanat + ".txt";}
+        URL url = getClass().getClassLoader().getResource(filePlace);
+        if (url == null) {
+            throw new RuntimeException("There is no such file: " + filePlace);
+        }
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split("\\*", 2);
+                String fileName = "";
+                if (parts.length >= 2) {
+                    if (eparchia.equals("PO")) {
+                        fileName = parts[1];
+                    } else if (eparchia.equals("KE")) {
+                    fileName = parts[0];
+                }
+                    listOfParishesHtml.add(fileName);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Vyskytla sa chyba pri čítaní zo súboru: " + e.getMessage());
+        }
+            return listOfParishesHtml;
+}
+
+
+    public List<Parish> returnListOfParishes(String eparchia, String dekanat) {
+        List<String> listOfParishesHtml = nameOfHtmlToList(eparchia,dekanat);
+        List<Parish> listOfParishes = new ArrayList<>();
+        if (eparchia.equals("PO")) {
+            for (int i = 0; i < listOfParishesHtml.size(); i++) {
+                Parish parish = parseInformationPo(eparchia,dekanat,listOfParishesHtml.get(i));
+                listOfParishes.add(parish);
+
+            }
+
+        }else if (eparchia.equals("KE")){
+            for (int i = 0; i < listOfParishesHtml.size(); i++) {
+                Parish parish = parseInfoKe(eparchia,dekanat,listOfParishesHtml.get(i));
+                listOfParishes.add(parish);
+
+        }
+    }
+        return listOfParishes;
+    }
+
+    public Parish parseInformationPo(String eparchia, String dekanat, String nameOfVillage) {
         Parish parish = new Parish();
-        String filePath = "src/main/resources/webs/"+dekanat+".lst/"+nameOfVillage+".html";
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+        String filePath = "webs/"+eparchia+"/"+dekanat+".lst/"+nameOfVillage+".html";
+        URL url = getClass().getClassLoader().getResource(filePath);
+        try {BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
             StringBuilder content = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
@@ -66,7 +118,6 @@ public class Parser {
                 String s5 = s4.replaceAll("[^\n]*&nbsp;", "");
                 List<String> collect = Arrays.stream(s5.split("\n")).map(StringUtils::strip).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
                 parish.setFilialky((ArrayList<String>) collect);
-
             }
 //            Jurisdikcne uzemie
             Optional<String> jurisdictionPlacesOptional = Stream.of(split).filter(it -> it.contains("Jurisdikčné územie")).findFirst();
@@ -104,12 +155,12 @@ public class Parser {
             }
         } catch (IOException e) {
             System.out.println("Vyskytla sa chyba pri čítaní zo súboru: " + e.getMessage());
-        }
+        }return parish;
     }
 
-    public void parseInfoKe(String nameOfVillage){
+    public Parish parseInfoKe(String eparchia,String dekanat, String nameOfVillage){
         Parish parish = new Parish();
-        String filePath = "webs/KE/"+nameOfVillage+".html";
+        String filePath = "webs/"+eparchia+"/"+dekanat+"/"+nameOfVillage+".html";
         URL url = getClass().getClassLoader().getResource(filePath);
         try {BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
             StringBuilder content = new StringBuilder();
@@ -133,6 +184,7 @@ public class Parser {
             String nameOfFilialky = nameofFilialkyElements.toString();
             String nameOfFilialky1 = nameOfFilialky.replaceAll("<[^>]*>","");
             List<String> collect = Arrays.stream(nameOfFilialky1.split("\n")).collect(Collectors.toList());
+            parish.setFilialky((ArrayList<String>) collect);
 //          Funkcia knaza
             Elements nameOfFunctionElements = doc.select("div.widget.clearfix");
             Element needPartoOfHtml = nameOfFunctionElements.get(1);
@@ -156,40 +208,17 @@ public class Parser {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }
-
-
+        }return parish;
     }
-    public void setNewInformation() {
-        String jsonFilePath = "src/main/resources/JSONview/out.json";
-        try {ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = objectMapper.readTree(new File(jsonFilePath));
-            JsonNode json = rootNode.get(0);
-            JsonNode dekanaty = json.get("dekanaty");
-            for (JsonNode dekanat : dekanaty) {
-                JsonNode farnosti = dekanat.get("farnosti");
-                for (JsonNode farnost : farnosti) {
-                    String farnostName = farnost.get("farnost").asText();
-                    if (farnostName.equals("Bačkov")) {
-                        String farar = "Anton Vesely"; // Tu zadajte meno farára
-                        ((ObjectNode) farnost).put("farar", farar);
-                    }
-                }
-            }
-            objectMapper.writeValue(new File(jsonFilePath), rootNode);
 
-            System.out.println("Informácie o farárovi v farnosti boli úspešne doplnené.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     public static void main(String[] args) {
-        Parish parish = new Parish();
-        parish.parseInfoKe("Košice-Západ");
+        Parser parser = new Parser();
 //        parish.parseInformationPo("SK","Hrabovčík");
 //        parish.setNewInformation();
-
+        List<Parish> Parishes = parser.returnListOfParishes("KE","Košice");
+        String parish = Parishes.get(1).getNameOfVillage();
+        System.out.println(parish);
 
     }
 }

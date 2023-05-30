@@ -23,14 +23,14 @@ public class GetPoWeb {
     }
     public void downloadPoWebs(){
         ArrayList<String> district = new ArrayList<>();
-        district.add("CM.lst");district.add("BJ.lst");district.add("GI.lst");district.add("HA.lst");district.add("HR.lst");district.add("HU.lst");
-        district.add("ML.lst");district.add("OR.lst");district.add("PO.lst");district.add("PP.lst");district.add("SB.lst");district.add("SK.lst");
-        district.add("SL.lst");district.add("SN.lst");district.add("SP.lst");district.add("VT.lst");
+        district.add("CM");district.add("BJ");district.add("GI");district.add("HA");district.add("HR");district.add("HU");
+        district.add("ML");district.add("OR");district.add("PO");district.add("PP");district.add("SB");district.add("SK");
+        district.add("SL");district.add("SN");district.add("SP");district.add("VT");
         String nameofDekanat;
         for( int i = 0; i < district.size(); i++) {
             nameofDekanat = district.get(getNum());
             setNum(1);
-            String filePlace = "PO/" + nameofDekanat;
+            String filePlace = "PO/" + nameofDekanat+".lst";
             URL url = getClass().getClassLoader().getResource(filePlace);
             if (url == null) {
                 throw new RuntimeException("There is no such file: " + filePlace);}
@@ -41,7 +41,7 @@ public class GetPoWeb {
                     if (parts.length >= 2) {
                         String web = parts[0];
                         String fileName = parts[1] + ".html";
-                        String saveDirectory = "src/main/resources/webs/"+nameofDekanat;
+                        String saveDirectory = "src/main/resources/webs/PO/"+nameofDekanat;
                         try {
                             Document doc = Jsoup.connect(web).get();
                             Path directoryPath = Paths.get(saveDirectory);
