@@ -1,6 +1,9 @@
 package sk.pavlovsky.utils;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -10,14 +13,44 @@ import org.jsoup.select.Elements;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Parser {
+    public HashMap<String, HashMap<String,List<Parish>>> returnHashMap(){
+        HashMap<String,List<Parish>> mapOfDistrictPo = new HashMap<>();
+        HashMap<String,List<Parish>> mapOfDistrictKe = new HashMap<>();
+        List<String> listOfEparchy = new ArrayList<>();
+        listOfEparchy.add("PO");listOfEparchy.add("KE");
+        List<String> listOfDistrictsPo = new ArrayList<>();
+        List<String> listOfDistrictsKe = new ArrayList<>();
+        listOfDistrictsPo.add("BJ");listOfDistrictsPo.add("CM");listOfDistrictsPo.add("GI");listOfDistrictsPo.add("HA");listOfDistrictsPo.add("HR");
+        listOfDistrictsPo.add("HU");listOfDistrictsPo.add("ML");listOfDistrictsPo.add("OR");listOfDistrictsPo.add("PO");listOfDistrictsPo.add("PP");
+        listOfDistrictsPo.add("SB");listOfDistrictsPo.add("SK");listOfDistrictsPo.add("SL");listOfDistrictsPo.add("SN");listOfDistrictsPo.add("SP");
+        listOfDistrictsPo.add("VT");listOfDistrictsKe.add("Košice");listOfDistrictsKe.add("Maďarský");listOfDistrictsKe.add("Michalovce");
+        listOfDistrictsKe.add("Sečovce");listOfDistrictsKe.add("Sobrance");listOfDistrictsKe.add("Spišská Nová Ves");listOfDistrictsKe.add("Trebišov");
+        for (String eparchia : listOfEparchy) {
+            List<String> listOfDistrict = null;
+            HashMap<String, List<Parish>> listHashMap = null;
+            if (eparchia.equals("PO")) {
+                listOfDistrict = listOfDistrictsPo;
+                listHashMap = mapOfDistrictPo;
+            } else if (eparchia.equals("KE")) {
+                listOfDistrict = listOfDistrictsKe;
+                listHashMap = mapOfDistrictKe;
+            }
+            for (String district : listOfDistrict) {
+                listHashMap.put(district, returnListOfParishes(eparchia, district));
+            }
+        }
+        HashMap<String, HashMap<String,List<Parish>>> finishMap = new HashMap<>();
+        finishMap.put("PO",mapOfDistrictPo);
+        finishMap.put("KE",mapOfDistrictKe);
+        return finishMap;
+    }
+
+
 
     public List<String> nameOfHtmlToList(String eparchia, String dekanat){
         List<String> listOfParishesHtml = new ArrayList<>();
@@ -33,7 +66,13 @@ public class Parser {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split("\\*", 2);
+                String regex=null;
+                if(eparchia.equals("PO")){
+                     regex = " ";
+                }else if (eparchia.equals("KE")) {
+                     regex = "\\*";
+                }
+                String[] parts = line.split(regex, 2);
                 String fileName = "";
                 if (parts.length >= 2) {
                     if (eparchia.equals("PO")) {
@@ -50,7 +89,6 @@ public class Parser {
             return listOfParishesHtml;
 }
 
-
     public List<Parish> returnListOfParishes(String eparchia, String dekanat) {
         List<String> listOfParishesHtml = nameOfHtmlToList(eparchia,dekanat);
         List<Parish> listOfParishes = new ArrayList<>();
@@ -58,14 +96,11 @@ public class Parser {
             for (int i = 0; i < listOfParishesHtml.size(); i++) {
                 Parish parish = parseInformationPo(eparchia,dekanat,listOfParishesHtml.get(i));
                 listOfParishes.add(parish);
-
             }
-
         }else if (eparchia.equals("KE")){
             for (int i = 0; i < listOfParishesHtml.size(); i++) {
                 Parish parish = parseInfoKe(eparchia,dekanat,listOfParishesHtml.get(i));
                 listOfParishes.add(parish);
-
         }
     }
         return listOfParishes;
@@ -73,7 +108,7 @@ public class Parser {
 
     public Parish parseInformationPo(String eparchia, String dekanat, String nameOfVillage) {
         Parish parish = new Parish();
-        String filePath = "webs/"+eparchia+"/"+dekanat+".lst/"+nameOfVillage+".html";
+        String filePath = "webs/"+eparchia+"/"+dekanat+"/"+nameOfVillage+".html";
         URL url = getClass().getClassLoader().getResource(filePath);
         try {BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
             StringBuilder content = new StringBuilder();
@@ -129,7 +164,6 @@ public class Parser {
                 String jurisdictionPlaces4= jurisdictionPlaces3.replaceAll("[^\n]*&nbsp;","");
                 List<String> collect = Arrays.stream(jurisdictionPlaces4.split("\\,")).map(StringUtils::strip).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
                 parish.setJurisdikcneUzemie((ArrayList<String>) collect);
-                System.out.println(collect);
             }
 //            kaplani
             Optional<String> kaplanOptional = Stream.of(split).filter(it -> it.contains("Kaplán")).findFirst();
@@ -140,7 +174,6 @@ public class Parser {
                 String kaplan3 = kaplan2.replaceAll("<[^>]+>","");
                 List<String> collect = Arrays.stream(kaplan3.split("\\,")).map(StringUtils::strip).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
                 parish.setKaplani((ArrayList<String>) collect);
-                System.out.println(collect);
             }
 //            vypomocny duchovny
             Optional<String> vypomocnyDuchovnyOptional = Stream.of(split).filter(it -> it.contains("Výpomocní duchovní")).findFirst();
@@ -151,7 +184,6 @@ public class Parser {
                 String vypomocnyDuchovny3 = vypomocnyDuchovny2.replaceAll("<[^>]+>","");
                 List<String> collect = Arrays.stream(vypomocnyDuchovny3.split("\\,")).map(StringUtils::strip).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
                 parish.setVypomocnyDuchovny((ArrayList<String>) collect);
-                System.out.println(collect);
             }
         } catch (IOException e) {
             System.out.println("Vyskytla sa chyba pri čítaní zo súboru: " + e.getMessage());
@@ -210,15 +242,61 @@ public class Parser {
             throw new RuntimeException(e);
         }return parish;
     }
+    public void setNewInformation() {
+        // Cesta k JSON súboru
+        String jsonFilePath = "src/main/resources/JSONview/out.json";
+
+        try {
+            // Vytvorenie ObjectMapperu
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            // Načítanie JSON súboru
+            JsonNode rootNode = null;
+            try {
+                rootNode = objectMapper.readTree(new File(jsonFilePath));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            // Prístup k prvemu objektu vo vnútri poľa
+            JsonNode json = rootNode.get(0);
+            System.out.println("json: "+json);
+
+            // Doplnenie informácií o farárovi do farnosti "Andrejová"
+            JsonNode dekanaty = json.get("dekanaty");
+            System.out.println("deka: "+dekanaty);
+            for (JsonNode dekanat : dekanaty) {
+                JsonNode farnosti = dekanat.get("farnosti");
+                System.out.println("far: "+farnosti);
+                for (JsonNode farnost : farnosti) {
+                    JsonNode farnostName = farnost.get("farnost");
+                    System.out.println("farnostName: "+farnostName);
+                    String farnostNames = farnost.get("farnost").asText();
+                    System.out.println("farnostNames: "+farnostNames);
+                    if (farnostName.equals("Bačkov")) {
+                        String farar = "Anton Vesely"; // Tu zadajte meno farára
+
+                        // Doplnenie informácie o farárovi
+                        ((ObjectNode) farnost).put("farar", farar);
+                    }
+                }
+            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
     public static void main(String[] args) {
         Parser parser = new Parser();
-//        parish.parseInformationPo("SK","Hrabovčík");
+        System.out.println(parser.nameOfHtmlToList("KE","Košice"));
+        System.out.println(parser.returnListOfParishes("PO","BJ"));
+        System.out.println(parser.returnHashMap());
+//        System.out.println(parser.parseInformationPo("PO","SK","Svidník").getNameOfVillage());
 //        parish.setNewInformation();
-        List<Parish> Parishes = parser.returnListOfParishes("KE","Košice");
-        String parish = Parishes.get(1).getNameOfVillage();
-        System.out.println(parish);
-
+//        List<Parish> Parishes = parser.returnListOfParishes("KE","Košice");
+//        String parish = Parishes.get(1).getNameOfVillage();
+//        System.out.println(parish);
+//        parser.setNewInformation();
     }
 }
