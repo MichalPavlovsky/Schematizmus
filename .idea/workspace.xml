@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e0eee6c3-6100-477e-8962-b5df6e6301bd" name="Changes" comment="Parser new function for better Parser (nameOfHtmlToList, returnListOfParishes)">
+    <list default="true" id="e0eee6c3-6100-477e-8962-b5df6e6301bd" name="Changes" comment="final HashMap">
       <change afterPath="$PROJECT_DIR$/src/main/resources/BA/hallEparchy.lst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
@@ -170,7 +170,14 @@
       <option name="project" value="LOCAL" />
       <updated>1685447093343</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="final HashMap">
+      <created>1685475842011</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1685475842011</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -195,17 +202,7 @@
     <MESSAGE value="transformer of parishhead" />
     <MESSAGE value="KE info parser" />
     <MESSAGE value="Parser new function for better Parser (nameOfHtmlToList, returnListOfParishes)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Parser new function for better Parser (nameOfHtmlToList, returnListOfParishes)" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/sk/pavlovsky/utils/Parser.java</url>
-          <line>48</line>
-          <option name="timeStamp" value="42" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="final HashMap" />
+    <option name="LAST_COMMIT_MESSAGE" value="final HashMap" />
   </component>
 </project>

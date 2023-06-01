@@ -18,6 +18,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Parser {
+    private int i=0;
+    public int getI(){
+        return i;
+    }
+    public void setI(int newI){
+        this.i = getI() + newI;
+    }
+    public void setI2(int newI){
+        this.i = newI;
+    }
     public HashMap<String, HashMap<String,List<Parish>>> returnHashMap(){
         HashMap<String,List<Parish>> mapOfDistrictPo = new HashMap<>();
         HashMap<String,List<Parish>> mapOfDistrictKe = new HashMap<>();
@@ -243,36 +253,29 @@ public class Parser {
         }return parish;
     }
     public void setNewInformation() {
-        // Cesta k JSON súboru
         String jsonFilePath = "src/main/resources/JSONview/out.json";
-
         try {
-            // Vytvorenie ObjectMapperu
             ObjectMapper objectMapper = new ObjectMapper();
-
-            // Načítanie JSON súboru
             JsonNode rootNode = null;
             try {
                 rootNode = objectMapper.readTree(new File(jsonFilePath));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
-            // Prístup k prvemu objektu vo vnútri poľa
             JsonNode json = rootNode.get(0);
             System.out.println("json: "+json);
 
             // Doplnenie informácií o farárovi do farnosti "Andrejová"
             JsonNode dekanaty = json.get("dekanaty");
-            System.out.println("deka: "+dekanaty);
+//            System.out.println("deka: "+dekanaty);
             for (JsonNode dekanat : dekanaty) {
                 JsonNode farnosti = dekanat.get("farnosti");
-                System.out.println("far: "+farnosti);
+//                System.out.println("far: "+farnosti);
                 for (JsonNode farnost : farnosti) {
                     JsonNode farnostName = farnost.get("farnost");
-                    System.out.println("farnostName: "+farnostName);
+//                    System.out.println("farnostName: "+farnostName);
                     String farnostNames = farnost.get("farnost").asText();
-                    System.out.println("farnostNames: "+farnostNames);
+//                    System.out.println("farnostNames: "+farnostNames);
                     if (farnostName.equals("Bačkov")) {
                         String farar = "Anton Vesely"; // Tu zadajte meno farára
 
@@ -285,13 +288,65 @@ public class Parser {
             throw new RuntimeException(e);
         }
     }
+    public void setInformation(){
+        String jsonFilePath = "src/main/resources/JSONview/out.json";
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = null;
+            try {
+                rootNode = objectMapper.readTree(new File(jsonFilePath));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        HashMap<String, HashMap<String, List<Parish>>> mapOfInformation = returnHashMap();
+        for (String keyAllMap:mapOfInformation.keySet()){
+            setI2(0);
+            HashMap<String, List<Parish>> partOfMap = mapOfInformation.get(keyAllMap);
+            boolean setting= true;
+            while(setting){
+                int ijj = getI();
+                System.out.println(ijj);
+                JsonNode nodeNames = rootNode.get(getI());
+                JsonNode eparchy = nodeNames.get("eparchia");
+                String eparchie = eparchy.asText();
+                if (eparchie.equals(keyAllMap)){
+                    setting=false;
+                }else setI(1);}
+            JsonNode json = rootNode.get(getI());
+            JsonNode dekanaty = json.get("dekanaty");
+            for(String keyOfDekanat:partOfMap.keySet()){
+                for(JsonNode dekanat:dekanaty){
+                    if (dekanat.equals(dekanat)){
+                        JsonNode farnosti = dekanat.get("farnosti");
+                        List<Parish> listOfParish = partOfMap.get(keyOfDekanat);
+                        for (Parish parish:listOfParish){
+                            for (JsonNode farnost : farnosti) {
+                                String farnostName = farnost.get("farnost").asText();
+                                String meno = parish.getNameOfVillage();
+                                if (farnostName.equals(meno)){
+                                    ArrayList<String> sll = parish.getKaplani();
+                                    ((ObjectNode)farnost).put("Kapláni", String.valueOf(sll));
+//                                    ((ObjectNode)farnost).put("Výpomocný duchovný", parish.);
+//                                    ((ObjectNode)farnost).put("Administrátor", parish.);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
-    public static void main(String[] args) {
+        public static void main(String[] args) {
         Parser parser = new Parser();
         System.out.println(parser.nameOfHtmlToList("KE","Košice"));
         System.out.println(parser.returnListOfParishes("PO","BJ"));
         System.out.println(parser.returnHashMap());
+        parser.setInformation();
 //        System.out.println(parser.parseInformationPo("PO","SK","Svidník").getNameOfVillage());
 //        parish.setNewInformation();
 //        List<Parish> Parishes = parser.returnListOfParishes("KE","Košice");
