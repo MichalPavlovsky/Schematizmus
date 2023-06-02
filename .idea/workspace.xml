@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e0eee6c3-6100-477e-8962-b5df6e6301bd" name="Changes" comment="final HashMap">
+    <list default="true" id="e0eee6c3-6100-477e-8962-b5df6e6301bd" name="Changes" comment="loader to json">
       <change afterPath="$PROJECT_DIR$/src/main/resources/BA/hallEparchy.lst" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
@@ -177,7 +177,14 @@
       <option name="project" value="LOCAL" />
       <updated>1685475842011</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="loader to json">
+      <created>1685649874936</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1685649874936</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -203,6 +210,7 @@
     <MESSAGE value="KE info parser" />
     <MESSAGE value="Parser new function for better Parser (nameOfHtmlToList, returnListOfParishes)" />
     <MESSAGE value="final HashMap" />
-    <option name="LAST_COMMIT_MESSAGE" value="final HashMap" />
+    <MESSAGE value="loader to json" />
+    <option name="LAST_COMMIT_MESSAGE" value="loader to json" />
   </component>
 </project>

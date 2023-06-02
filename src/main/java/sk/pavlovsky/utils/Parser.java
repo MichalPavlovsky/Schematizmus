@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -289,23 +290,20 @@ public class Parser {
         }
     }
     public void setInformation(){
-        String jsonFilePath = "src/main/resources/JSONview/out.json";
+        String jsonFilePath = "JSONview/outt.json";
+        URL url= getClass().getClassLoader().getResource(jsonFilePath);
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = null;
+            JsonNode rootNode;
             try {
-                rootNode = objectMapper.readTree(new File(jsonFilePath));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+                rootNode = objectMapper.readTree(url);
+
         HashMap<String, HashMap<String, List<Parish>>> mapOfInformation = returnHashMap();
         for (String keyAllMap:mapOfInformation.keySet()){
             setI2(0);
             HashMap<String, List<Parish>> partOfMap = mapOfInformation.get(keyAllMap);
             boolean setting= true;
             while(setting){
-                int ijj = getI();
-                System.out.println(ijj);
                 JsonNode nodeNames = rootNode.get(getI());
                 JsonNode eparchy = nodeNames.get("eparchia");
                 String eparchie = eparchy.asText();
@@ -314,18 +312,22 @@ public class Parser {
                 }else setI(1);}
             JsonNode json = rootNode.get(getI());
             JsonNode dekanaty = json.get("dekanaty");
-            for(String keyOfDekanat:partOfMap.keySet()){
-                for(JsonNode dekanat:dekanaty){
-                    if (dekanat.equals(dekanat)){
+            for(String keyOfDekanat:partOfMap.keySet()) {
+                for (JsonNode dekanat : dekanaty) {
+                    JsonNode dekanatNameNode = dekanat.get("dekanat");
+                    String dekanatName = dekanatNameNode.asText();
+                    if (dekanatName.equals(keyOfDekanat)) {
                         JsonNode farnosti = dekanat.get("farnosti");
                         List<Parish> listOfParish = partOfMap.get(keyOfDekanat);
-                        for (Parish parish:listOfParish){
+                        for (Parish parish : listOfParish) {
                             for (JsonNode farnost : farnosti) {
                                 String farnostName = farnost.get("farnost").asText();
                                 String meno = parish.getNameOfVillage();
-                                if (farnostName.equals(meno)){
-                                    ArrayList<String> sll = parish.getKaplani();
-                                    ((ObjectNode)farnost).put("Kapláni", String.valueOf(sll));
+                                if (farnostName.equals(meno)) {
+                                    ArrayList<String> kaplani = parish.getKaplani();
+                                    String nameofSpravca = parish.getNameofSpravca();
+                                    ((ObjectNode)farnost).put("Farar", nameofSpravca);
+                                    ((ObjectNode)farnost).put("Kaplani", objectMapper.valueToTree(kaplani));
 //                                    ((ObjectNode)farnost).put("Výpomocný duchovný", parish.);
 //                                    ((ObjectNode)farnost).put("Administrátor", parish.);
                                 }
@@ -334,8 +336,13 @@ public class Parser {
                     }
                 }
             }
-        }
-    } catch (RuntimeException e) {
+    }
+                File file = new File(url.toURI());
+                objectMapper.writeValue(file, rootNode);
+            } catch (IOException | URISyntaxException e) {
+        throw new RuntimeException(e);
+    }
+        } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
     }
