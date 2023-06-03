@@ -1,8 +1,8 @@
 package sk.pavlovsky.utils;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
@@ -14,114 +14,71 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Parser {
-    private int i=0;
-    public int getI(){
-        return i;
-    }
-    public void setI(int newI){
-        this.i = getI() + newI;
-    }
-    public void setI2(int newI){
-        this.i = newI;
-    }
-    public HashMap<String, HashMap<String,List<Parish>>> returnHashMap(){
-        HashMap<String,List<Parish>> mapOfDistrictPo = new HashMap<>();
-        HashMap<String,List<Parish>> mapOfDistrictKe = new HashMap<>();
-        List<String> listOfEparchy = new ArrayList<>();
-        listOfEparchy.add("PO");listOfEparchy.add("KE");
-        List<String> listOfDistrictsPo = new ArrayList<>();
-        List<String> listOfDistrictsKe = new ArrayList<>();
-        listOfDistrictsPo.add("BJ");listOfDistrictsPo.add("CM");listOfDistrictsPo.add("GI");listOfDistrictsPo.add("HA");listOfDistrictsPo.add("HR");
-        listOfDistrictsPo.add("HU");listOfDistrictsPo.add("ML");listOfDistrictsPo.add("OR");listOfDistrictsPo.add("PO");listOfDistrictsPo.add("PP");
-        listOfDistrictsPo.add("SB");listOfDistrictsPo.add("SK");listOfDistrictsPo.add("SL");listOfDistrictsPo.add("SN");listOfDistrictsPo.add("SP");
-        listOfDistrictsPo.add("VT");listOfDistrictsKe.add("Košice");listOfDistrictsKe.add("Maďarský");listOfDistrictsKe.add("Michalovce");
-        listOfDistrictsKe.add("Sečovce");listOfDistrictsKe.add("Sobrance");listOfDistrictsKe.add("Spišská Nová Ves");listOfDistrictsKe.add("Trebišov");
-        for (String eparchia : listOfEparchy) {
-            List<String> listOfDistrict = null;
-            HashMap<String, List<Parish>> listHashMap = null;
-            if (eparchia.equals("PO")) {
-                listOfDistrict = listOfDistrictsPo;
-                listHashMap = mapOfDistrictPo;
-            } else if (eparchia.equals("KE")) {
-                listOfDistrict = listOfDistrictsKe;
-                listHashMap = mapOfDistrictKe;
-            }
-            for (String district : listOfDistrict) {
-                listHashMap.put(district, returnListOfParishes(eparchia, district));
-            }
-        }
-        HashMap<String, HashMap<String,List<Parish>>> finishMap = new HashMap<>();
-        finishMap.put("PO",mapOfDistrictPo);
-        finishMap.put("KE",mapOfDistrictKe);
-        return finishMap;
-    }
-
-
-
-    public List<String> nameOfHtmlToList(String eparchia, String dekanat){
-        List<String> listOfParishesHtml = new ArrayList<>();
-        String filePlace = "PO/" + dekanat + ".lst";
-        if (eparchia.equals("PO")) {
-            filePlace = "PO/" + dekanat + ".lst";
-        } else if (eparchia.equals("KE")) {
-            filePlace = "KE/" + dekanat + ".txt";}
+    //    upravit catch
+    public HashMap<String, HashMap<String, List<Parish>>> returnHashMap() {
+        HashMap<String, HashMap<String, List<Parish>>> finishMap = new HashMap<>();
+        List<String> listEparchy;
+        String filePlace = "webs";
         URL url = getClass().getClassLoader().getResource(filePlace);
         if (url == null) {
-            throw new RuntimeException("There is no such file: " + filePlace);
+            throw new RuntimeException("There is no such file" + filePlace);
         }
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String regex=null;
-                if(eparchia.equals("PO")){
-                     regex = " ";
-                }else if (eparchia.equals("KE")) {
-                     regex = "\\*";
+        try (Stream<Path> pathStream = Files.list(Path.of(url.toURI()))) {
+            listEparchy = pathStream.map(Path::getFileName).map(Path::toString).toList();
+            for (String eparchia : listEparchy) {
+                String filePlace1 = "webs/" + eparchia;
+                URL url1 = getClass().getClassLoader().getResource(filePlace1);
+                if (url1 == null) {
+                    throw new RuntimeException("There is no such file " + filePlace1);
                 }
-                String[] parts = line.split(regex, 2);
-                String fileName = "";
-                if (parts.length >= 2) {
-                    if (eparchia.equals("PO")) {
-                        fileName = parts[1];
-                    } else if (eparchia.equals("KE")) {
-                    fileName = parts[0];
-                }
-                    listOfParishesHtml.add(fileName);
+                try (Stream<Path> pathStream1 = Files.list(Path.of(url1.toURI()))) {
+                    List<String> listOfDistricts = pathStream1.map(Path::getFileName).map(Path::toString).toList();
+                    HashMap<String, List<Parish>> listHashMap = new HashMap<>();
+                    for (String district : listOfDistricts) {
+                        listHashMap.put(district, returnListOfParishes(eparchia, district));
+                    }
+                    finishMap.put(eparchia, listHashMap);
+                } catch (IOException | URISyntaxException e) {
+                    throw new RuntimeException(e);
                 }
             }
-        } catch (IOException e) {
-            System.out.println("Vyskytla sa chyba pri čítaní zo súboru: " + e.getMessage());
-        }
-            return listOfParishesHtml;
-}
-
-    public List<Parish> returnListOfParishes(String eparchia, String dekanat) {
-        List<String> listOfParishesHtml = nameOfHtmlToList(eparchia,dekanat);
-        List<Parish> listOfParishes = new ArrayList<>();
-        if (eparchia.equals("PO")) {
-            for (int i = 0; i < listOfParishesHtml.size(); i++) {
-                Parish parish = parseInformationPo(eparchia,dekanat,listOfParishesHtml.get(i));
-                listOfParishes.add(parish);
-            }
-        }else if (eparchia.equals("KE")){
-            for (int i = 0; i < listOfParishesHtml.size(); i++) {
-                Parish parish = parseInfoKe(eparchia,dekanat,listOfParishesHtml.get(i));
-                listOfParishes.add(parish);
+            return finishMap;
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
+
+    public List<Parish> returnListOfParishes(String eparchia, String dekanat) throws IOException, URISyntaxException {
+        String filePlace = "webs/" + eparchia + "/" + dekanat;
+        URL url = getClass().getClassLoader().getResource(filePlace);
+        List<String> listOfParishesHtmls = Files.list(Path.of(url.toURI())).map(Path::getFileName).map(Path::toString).toList();
+        List<Parish> listOfParishes = new ArrayList<>();
+        for (String listOfParishesHtml : listOfParishesHtmls) {
+            Parish parish = null;
+            String html = listOfParishesHtml.replaceAll(".html", "");
+            if (eparchia.equals("PO")) {
+                parish = parseInformationPo(eparchia, dekanat, html);
+            } else if (eparchia.equals("KE")) {
+                parish = parseInfoKe(eparchia, dekanat, html);
+            }
+            listOfParishes.add(parish);
+        }
         return listOfParishes;
     }
 
     public Parish parseInformationPo(String eparchia, String dekanat, String nameOfVillage) {
         Parish parish = new Parish();
-        String filePath = "webs/"+eparchia+"/"+dekanat+"/"+nameOfVillage+".html";
+        String filePath = "webs/" + eparchia + "/" + dekanat + "/" + nameOfVillage + ".html";
         URL url = getClass().getClassLoader().getResource(filePath);
-        try {BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
             StringBuilder content = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
@@ -129,7 +86,7 @@ public class Parser {
             }
             String htmls = content.toString();
             String[] split = StringUtils.splitByWholeSeparator(htmls, "<strong>");
-            Optional<String> filiálkyOptional = Stream.of(split).filter(it -> it.contains("Filiálk")).findFirst();
+            Optional<String> filialkyOptional = Stream.of(split).filter(it -> it.contains("Filiálk")).findFirst();
 //            Meno Farnosti
             Optional<String> nameOfFarnost = Stream.of(split).filter(it -> it.contains("h1")).findFirst();
 //            Meno Spravcu
@@ -137,28 +94,19 @@ public class Parser {
             Optional<String> nameOfSpravca = Stream.of(split).filter(it -> it.contains("Správca farnosti")).findFirst();
             Optional<String> nameOfAdministrator = Stream.of(split).filter(it -> it.contains("Administrator")).findFirst();
             if (nameOfFarar.isPresent()) {
-                String nameOfFararr = nameOfFarar.get();
-                String nameOfFarar1 = nameOfFararr.replaceAll(".*</strong>","");
-                String nameOfFarar2 = nameOfFarar1.replaceAll("<[^>]+>","");
+                String nameOfFarar2 = getName(nameOfFarar, ".*</strong>");
                 parish.setNameofSpravca(nameOfFarar2);
                 parish.setFunctionOfAdministrator(2);
             } else if (nameOfSpravca.isPresent()) {
-                String nameOfSpravcaa = nameOfSpravca.get();
-                String nameOfSpravca1 = nameOfSpravcaa.replaceAll(".*</strong>","");
-                String nameOfSpravca2 = nameOfSpravca1.replaceAll("<[^>]+>","");
+                String nameOfSpravca2 = getName(nameOfSpravca, ".*</strong>");
                 parish.setNameofSpravca(nameOfSpravca2);
                 parish.setFunctionOfAdministrator(1);
             }
-            String nameOfParish = nameOfFarnost.get();
-            String nameOfParish1 = nameOfParish.replaceAll(".*<span[^>]*>","");
-            String nameOfParish2 = nameOfParish1.replaceAll("<[^>]+>","");
+            String nameOfParish2 = getName(nameOfFarnost, ".*<span[^>]*>");
             parish.setNameOfVillage(nameOfParish2);
 //            Filialky
-            if (filiálkyOptional.isPresent()) {
-                String filiaky = filiálkyOptional.get();
-                String s = filiaky.replaceAll(".*</strong>", "");
-                String s1 = s.replaceAll("<span[^>]*>[^>]*>","");
-                String s2 = s1.replaceAll("<[^>]+>", "\n");
+            if (filialkyOptional.isPresent()) {
+                String s2 = getString(filialkyOptional, "<span[^>]*>[^>]*>", "<[^>]+>", "\n");
                 String s3 = s2.replaceAll(" - .*", "");
                 String s4 = s3.replaceAll("\\d+\\. ", "");
                 String s5 = s4.replaceAll("[^\n]*&nbsp;", "");
@@ -168,44 +116,54 @@ public class Parser {
 //            Jurisdikcne uzemie
             Optional<String> jurisdictionPlacesOptional = Stream.of(split).filter(it -> it.contains("Jurisdikčné územie")).findFirst();
             if (jurisdictionPlacesOptional.isPresent()) {
-                String jurisdictionPlaces = jurisdictionPlacesOptional.get();
-                String jurisdictionPlaces1= jurisdictionPlaces.replaceAll(".*</strong>","");
-                String jurisdictionPlaces2= jurisdictionPlaces1.replaceAll("<[^>]+>","");
-                String jurisdictionPlaces3= jurisdictionPlaces2.replaceAll("\\d+","");
-                String jurisdictionPlaces4= jurisdictionPlaces3.replaceAll("[^\n]*&nbsp;","");
-                List<String> collect = Arrays.stream(jurisdictionPlaces4.split("\\,")).map(StringUtils::strip).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
+                String jurisdictionPlaces3 = getString(jurisdictionPlacesOptional, "<[^>]+>", "\\d+", "");
+                String jurisdictionPlaces4 = jurisdictionPlaces3.replaceAll("[^\n]*&nbsp;", "");
+                List<String> collect = getCollect(jurisdictionPlaces4);
                 parish.setJurisdikcneUzemie((ArrayList<String>) collect);
             }
 //            kaplani
             Optional<String> kaplanOptional = Stream.of(split).filter(it -> it.contains("Kaplán")).findFirst();
             if (kaplanOptional.isPresent()) {
-                String kaplan = kaplanOptional.get();
-                String kaplan1 = kaplan.replaceAll(".*</strong>", "");
-                String kaplan2 = kaplan1.replaceAll(" <[^>]+>","");
-                String kaplan3 = kaplan2.replaceAll("<[^>]+>","");
-                List<String> collect = Arrays.stream(kaplan3.split("\\,")).map(StringUtils::strip).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
+                String kaplan3 = getString(kaplanOptional, " <[^>]+>", "<[^>]+>", "");
+                List<String> collect = getCollect(kaplan3);
                 parish.setKaplani((ArrayList<String>) collect);
             }
 //            vypomocny duchovny
             Optional<String> vypomocnyDuchovnyOptional = Stream.of(split).filter(it -> it.contains("Výpomocní duchovní")).findFirst();
             if (vypomocnyDuchovnyOptional.isPresent()) {
-                String vypomocnyDuchovny = vypomocnyDuchovnyOptional.get();
-                String vypomocnyDuchovny1 = vypomocnyDuchovny.replaceAll(".*</strong>","");
-                String vypomocnyDuchovny2 = vypomocnyDuchovny1.replaceAll(" <[^>]+>","");
-                String vypomocnyDuchovny3 = vypomocnyDuchovny2.replaceAll("<[^>]+>","");
-                List<String> collect = Arrays.stream(vypomocnyDuchovny3.split("\\,")).map(StringUtils::strip).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
+                String vypomocnyDuchovny3 = getString(vypomocnyDuchovnyOptional, " <[^>]+>", "<[^>]+>", "");
+                List<String> collect = getCollect(vypomocnyDuchovny3);
                 parish.setVypomocnyDuchovny((ArrayList<String>) collect);
             }
         } catch (IOException e) {
             System.out.println("Vyskytla sa chyba pri čítaní zo súboru: " + e.getMessage());
-        }return parish;
+        }
+        return parish;
     }
 
-    public Parish parseInfoKe(String eparchia,String dekanat, String nameOfVillage){
+    private static String getName(Optional<String> nameOfSpravca, String regex) {
+        String nameOfSpravcaa = nameOfSpravca.get();
+        String nameOfSpravca1 = nameOfSpravcaa.replaceAll(regex, "");
+        return nameOfSpravca1.replaceAll("<[^>]+>", "").trim();
+    }
+
+    private static List<String> getCollect(String jurisdictionPlaces4) {
+        return Arrays.stream(jurisdictionPlaces4.split("\\,")).map(StringUtils::strip).filter(StringUtils::isNotEmpty).collect(Collectors.toList());
+    }
+
+    private static String getString(Optional<String> kaplanOptional, String regex, String regex1, String replacement) {
+        String kaplan = kaplanOptional.get();
+        String kaplan1 = kaplan.replaceAll(".*</strong>", "");
+        String kaplan2 = kaplan1.replaceAll(regex, "");
+        return kaplan2.replaceAll(regex1, replacement);
+    }
+
+    public Parish parseInfoKe(String eparchia, String dekanat, String nameOfVillage) {
         Parish parish = new Parish();
-        String filePath = "webs/"+eparchia+"/"+dekanat+"/"+nameOfVillage+".html";
+        String filePath = "webs/" + eparchia + "/" + dekanat + "/" + nameOfVillage + ".html";
         URL url = getClass().getClassLoader().getResource(filePath);
-        try {BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
             StringBuilder content = new StringBuilder();
             String line;
             while ((line = br.readLine()) != null) {
@@ -225,7 +183,7 @@ public class Parser {
 //          Filialky
             Elements nameofFilialkyElements = doc.select("div#post-list-footer h4");
             String nameOfFilialky = nameofFilialkyElements.toString();
-            String nameOfFilialky1 = nameOfFilialky.replaceAll("<[^>]*>","");
+            String nameOfFilialky1 = nameOfFilialky.replaceAll("<[^>]*>", "");
             List<String> collect = Arrays.stream(nameOfFilialky1.split("\n")).collect(Collectors.toList());
             parish.setFilialky((ArrayList<String>) collect);
 //          Funkcia knaza
@@ -235,130 +193,96 @@ public class Parser {
             Document docu = Jsoup.parse(htmls);
             Elements nameOfPriests = docu.select("div.entry-title h4 a");
             Elements function = docu.select("div.entry-c li.color");
-            for (int i=0;  i< function.size(); i++){
+            for (int i = 0; i < function.size(); i++) {
                 String nameOfFunction = function.get(i).text();
                 if (nameOfFunction.contains("farár")) {
                     parish.setNameofSpravca(nameOfPriests.get(i).text());
-                }else if (nameOfFunction.contains("výpomocný duchovný")) {
+                } else if (nameOfFunction.contains("výpomocný duchovný")) {
                     parish.getVypomocnyDuchovny().add(nameOfPriests.get(i).text());
-                }else if (nameOfFunction.contains("duchovný správca")) {
+                } else if (nameOfFunction.contains("duchovný správca")) {
                     parish.getDuchovnySpravca().add(nameOfPriests.get(i).text());
-                }else if (nameOfFunction.contains("kaplán")) {
+                } else if (nameOfFunction.contains("kaplán")) {
                     parish.getKaplani().add(nameOfPriests.get(i).text());
-                }else if (nameOfFunction.contains("na odpočinku")) {
+                } else if (nameOfFunction.contains("na odpočinku")) {
                     parish.getNaOdpocinku().add(nameOfPriests.get(i).text());
                 }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }return parish;
-    }
-    public void setNewInformation() {
-        String jsonFilePath = "src/main/resources/JSONview/out.json";
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rootNode = null;
-            try {
-                rootNode = objectMapper.readTree(new File(jsonFilePath));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            JsonNode json = rootNode.get(0);
-            System.out.println("json: "+json);
-
-            // Doplnenie informácií o farárovi do farnosti "Andrejová"
-            JsonNode dekanaty = json.get("dekanaty");
-//            System.out.println("deka: "+dekanaty);
-            for (JsonNode dekanat : dekanaty) {
-                JsonNode farnosti = dekanat.get("farnosti");
-//                System.out.println("far: "+farnosti);
-                for (JsonNode farnost : farnosti) {
-                    JsonNode farnostName = farnost.get("farnost");
-//                    System.out.println("farnostName: "+farnostName);
-                    String farnostNames = farnost.get("farnost").asText();
-//                    System.out.println("farnostNames: "+farnostNames);
-                    if (farnostName.equals("Bačkov")) {
-                        String farar = "Anton Vesely"; // Tu zadajte meno farára
-
-                        // Doplnenie informácie o farárovi
-                        ((ObjectNode) farnost).put("farar", farar);
-                    }
-                }
-            }
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
         }
+        return parish;
     }
-    public void setInformation(){
-        String jsonFilePath = "JSONview/outt.json";
-        URL url= getClass().getClassLoader().getResource(jsonFilePath);
+
+    public void setInformation() {
+//        String jsonFilePath = "JsonView/out.json";
+        String jsonFilePaths = "src/main/resources/JsonView/out.json";
+//        URL url = getClass().getClassLoader().getResource(jsonFilePath);
+//        if (url==null) {
+//            throw new RuntimeException("There is no such file "+jsonFilePath);
+//        }
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode rootNode;
             try {
-                rootNode = objectMapper.readTree(url);
+                rootNode = objectMapper.readTree(new File(jsonFilePaths));
 
-        HashMap<String, HashMap<String, List<Parish>>> mapOfInformation = returnHashMap();
-        for (String keyAllMap:mapOfInformation.keySet()){
-            setI2(0);
-            HashMap<String, List<Parish>> partOfMap = mapOfInformation.get(keyAllMap);
-            boolean setting= true;
-            while(setting){
-                JsonNode nodeNames = rootNode.get(getI());
-                JsonNode eparchy = nodeNames.get("eparchia");
-                String eparchie = eparchy.asText();
-                if (eparchie.equals(keyAllMap)){
-                    setting=false;
-                }else setI(1);}
-            JsonNode json = rootNode.get(getI());
-            JsonNode dekanaty = json.get("dekanaty");
-            for(String keyOfDekanat:partOfMap.keySet()) {
-                for (JsonNode dekanat : dekanaty) {
-                    JsonNode dekanatNameNode = dekanat.get("dekanat");
-                    String dekanatName = dekanatNameNode.asText();
-                    if (dekanatName.equals(keyOfDekanat)) {
-                        JsonNode farnosti = dekanat.get("farnosti");
-                        List<Parish> listOfParish = partOfMap.get(keyOfDekanat);
-                        for (Parish parish : listOfParish) {
-                            for (JsonNode farnost : farnosti) {
-                                String farnostName = farnost.get("farnost").asText();
-                                String meno = parish.getNameOfVillage();
-                                if (farnostName.equals(meno)) {
-                                    ArrayList<String> kaplani = parish.getKaplani();
-                                    String nameofSpravca = parish.getNameofSpravca();
-                                    ((ObjectNode)farnost).put("Farar", nameofSpravca);
-                                    ((ObjectNode)farnost).put("Kaplani", objectMapper.valueToTree(kaplani));
-//                                    ((ObjectNode)farnost).put("Výpomocný duchovný", parish.);
-//                                    ((ObjectNode)farnost).put("Administrátor", parish.);
+                HashMap<String, HashMap<String, List<Parish>>> mapOfInformation = returnHashMap();
+                for (String keyAllMap : mapOfInformation.keySet()) {
+                    HashMap<String, List<Parish>> partOfMap = mapOfInformation.get(keyAllMap);
+                    for (int i = 0; i <= mapOfInformation.size(); i++) {
+                        JsonNode nodeNames = rootNode.get(i);
+                        JsonNode eparchy = nodeNames.get("eparchia");
+                        String eparchie = eparchy.asText();
+                        if (eparchie.equals(keyAllMap)) {
+                            JsonNode json = rootNode.get(i);
+                            JsonNode dekanaty = json.get("dekanaty");
+                            for (String keyOfDekanat : partOfMap.keySet()) {
+                                for (JsonNode dekanat : dekanaty) {
+                                    JsonNode dekanatNameNode = dekanat.get("dekanat");
+                                    String dekanatName = dekanatNameNode.asText();
+                                    if (dekanatName.equals(keyOfDekanat)) {
+                                        JsonNode farnosti = dekanat.get("farnosti");
+                                        List<Parish> listOfParish = partOfMap.get(keyOfDekanat);
+                                        for (Parish parish : listOfParish) {
+                                            for (JsonNode farnost : farnosti) {
+                                                String farnostName = farnost.get("farnost").asText();
+                                                String meno = parish.getNameOfVillage().trim();
+                                                if (farnostName.equals(meno)) {
+                                                    String nameofSpravca = parish.getNameofSpravca();
+                                                    if (nameofSpravca != null) {
+                                                        ((ObjectNode) farnost).put("Farar", nameofSpravca.trim());
+                                                    }
+                                                    ((ObjectNode) farnost).put("Kaplani", createArray(parish.getKaplani()));
+                                                    ((ObjectNode) farnost).put("Výpomocný duchovný", createArray(parish.getVypomocnyDuchovny()));
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                objectMapper.writeValue(new File(jsonFilePaths), rootNode);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-    }
-                File file = new File(url.toURI());
-                objectMapper.writeValue(file, rootNode);
-            } catch (IOException | URISyntaxException e) {
-        throw new RuntimeException(e);
-    }
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
     }
 
+    public ArrayNode createArray(ArrayList<String> array) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ArrayNode arrayNode = objectMapper.createArrayNode();
+        for (String arr : array) {
+            arrayNode.add(arr);
+        }
+        return arrayNode;
+    }
 
-        public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Parser parser = new Parser();
-        System.out.println(parser.nameOfHtmlToList("KE","Košice"));
-        System.out.println(parser.returnListOfParishes("PO","BJ"));
-        System.out.println(parser.returnHashMap());
         parser.setInformation();
-//        System.out.println(parser.parseInformationPo("PO","SK","Svidník").getNameOfVillage());
-//        parish.setNewInformation();
-//        List<Parish> Parishes = parser.returnListOfParishes("KE","Košice");
-//        String parish = Parishes.get(1).getNameOfVillage();
-//        System.out.println(parish);
-//        parser.setNewInformation();
     }
 }

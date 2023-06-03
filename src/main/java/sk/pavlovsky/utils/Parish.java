@@ -5,6 +5,22 @@ import java.util.ArrayList;
 
 public class Parish {
     private String nameOfVillage;
+
+    @Override
+    public String toString() {
+        return "Parish{" +
+                "nameOfVillage='" + nameOfVillage + '\'' +
+                ", functionOfAdministrator=" + functionOfAdministrator +
+                ", filialky=" + filialky +
+                ", naOdpocinku=" + naOdpocinku +
+                ", jurisdikcneUzemie=" + jurisdikcneUzemie +
+                ", nameofSpravca='" + nameofSpravca + '\'' +
+                ", kaplani=" + kaplani +
+                ", vypomocnyDuchovny=" + vypomocnyDuchovny +
+                ", duchovnySpravca=" + duchovnySpravca +
+                '}';
+    }
+
     private int functionOfAdministrator;
 
     public int getFunctionOfAdministrator() {
