@@ -1,4 +1,4 @@
-package sk.pavlovsky.utils;
+package sk.pavlovsky;
 
 import java.util.ArrayList;
 
