@@ -1,8 +1,15 @@
 package sk.pavlovsky.database;
 
+import sk.pavlovsky.IdStore;
+import sk.pavlovsky.Parish;
 import sk.pavlovsky.database.interfaces.DatabaseImplementor;
+import sk.pavlovsky.utils.Parser;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 public class MySqlImplementor implements DatabaseImplementor {
     private Connection con;
@@ -31,15 +38,170 @@ public class MySqlImplementor implements DatabaseImplementor {
             }
         }
     }
-    public void insertData(int id, String firstName) {
-        String query = "INSERT INTO `funkcia` (`ID`,`NAZOV`) VALUES (?, ?)";
 
-        try (PreparedStatement statement = con.prepareStatement(query)) {
-            statement.setInt(1, id);
-            statement.setString(2, firstName);
-            statement.executeUpdate();
-        }catch (SQLException e) {
-            throw new RuntimeException("Issue with insert Data");
+    @Override
+    public void insertData() {
+        String queryEparchy = "INSERT INTO `EPARCHIA` (NAZOV) VALUES (?)";
+        String queryPresbyterat = "INSERT INTO `PROTOPRESBYTERAT` (NAZOV, FK_EPARCHIA) VALUES (?, ?)";
+        try (
+                PreparedStatement stmtEparchy = con.prepareStatement(queryEparchy, Statement.RETURN_GENERATED_KEYS);
+                PreparedStatement stmtPresbyterat = con.prepareStatement(queryPresbyterat, Statement.RETURN_GENERATED_KEYS)) {
+            createFunctions(con);
+            Parser parser = new Parser();
+            IdStore idStore = new IdStore();
+            HashMap<String, HashMap<String, List<Parish>>> mapOfInformation = parser.runParser();
+            for (String keyAllMap : mapOfInformation.keySet()) {
+                stmtEparchy.setString(1, keyAllMap);
+                stmtEparchy.executeUpdate();
+                idStore.setId_eparchy(getID(stmtEparchy));
+                for (String dekanat : mapOfInformation.get(keyAllMap).keySet()) {
+                    setIntSetStringAndExecute(stmtPresbyterat, dekanat, idStore.getId_eparchy());
+                    idStore.setId_dekanat(getID(stmtPresbyterat));
+                    List<Parish> listOfParishes = mapOfInformation.get(keyAllMap).get(dekanat);
+                    loadParishes(listOfParishes, idStore);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * @param arrayList      list of parish features for example vypomocny duchovny, kaplani
+     * @param stmtOsoba      statement for Osoba who is main priest in Parish
+     * @param stmtFeature    especially statement feature of parish
+     * @param stmtParish     statement of Parish
+     * @param functionOfName we find out id of this function in DB
+     * @param parish         object of Parish
+     * @throws SQLException in insertData we resolve SQL exception
+     */
+    public void loadParishFeatures(ArrayList<String> arrayList, PreparedStatement stmtOsoba, PreparedStatement stmtFeature, PreparedStatement stmtParish, String functionOfName, Parish parish) throws SQLException {
+        if (arrayList != null && parish.getFilialky().isEmpty()) {
+            for (String kaplan : arrayList) {
+                setIntSetStringAndExecute(stmtOsoba, kaplan, getIdOfFunction(functionOfName));
+                stmtFeature.setInt(1, getID(stmtOsoba));
+                stmtFeature.setInt(2, getID(stmtParish));
+                stmtFeature.execute();
+
+            }
+        }
+    }
+
+    /**
+     * @param listOfParishes list of Parishes in especially district
+     * @param idStore        in idStore we have id of eparchy and district for this list of Parishes
+     * @throws SQLException in insertData we resolve SQL exception
+     */
+    public void loadParishes(List<Parish> listOfParishes, IdStore idStore) throws SQLException {
+        String queryOsoba = "INSERT INTO `OSOBA` (NAZOV, FK_FUNKCIA) VALUES (?, ?)";
+        String queryParish = "INSERT INTO `FARNOST` (NAZOV, FK_PROTOPRESBYTERAT, FK_OSOBA_SPRAVCA) VALUES (?, ?, ?)";
+        String queryVypomocnyDuchovny = "INSERT INTO `VYPOMOCNYDUCHOVNY` (FK_OSOBA, FK_FARNOST) VALUES (?, ?)";
+        String queryKaplan = "INSERT INTO `KAPLAN` (FK_OSOBA, FK_FARNOST) VALUES (?, ?)";
+        String queryFilialka = "INSERT INTO `FILIALKA` (NAZOV, FK_FARNOST) VALUES (?, ?)";
+        PreparedStatement stmtOsoba = con.prepareStatement(queryOsoba, Statement.RETURN_GENERATED_KEYS);
+        PreparedStatement stmtParish = con.prepareStatement(queryParish, Statement.RETURN_GENERATED_KEYS);
+        PreparedStatement stmtVypomocnyDuchovny = con.prepareStatement(queryVypomocnyDuchovny, Statement.RETURN_GENERATED_KEYS);
+        PreparedStatement stmtKaplan = con.prepareStatement(queryKaplan, Statement.RETURN_GENERATED_KEYS);
+        PreparedStatement stmtFilialka = con.prepareStatement(queryFilialka, Statement.RETURN_GENERATED_KEYS);
+
+        for (Parish parish : listOfParishes) {
+            int id = setIdFunctionOfAdministrator(parish);
+            setIntSetStringAndExecute(stmtOsoba, parish.getNameofSpravca(), id);
+            stmtParish.setString(1, parish.getNameOfVillage());
+            stmtParish.setInt(2, idStore.getId_dekanat());
+            stmtParish.setInt(3, getID(stmtOsoba));
+            stmtParish.executeUpdate();
+            loadParishFeatures(parish.getKaplani(), stmtOsoba, stmtKaplan, stmtParish, "Kaplan", parish);
+            loadParishFeatures(parish.getVypomocnyDuchovny(), stmtOsoba, stmtVypomocnyDuchovny, stmtParish, "Vypomocny Duchovny", parish);
+            if (parish.getFilialky() != null && parish.getFilialky().isEmpty()) {
+                for (String filialka : parish.getFilialky()) {
+                    setIntSetStringAndExecute(stmtFilialka, filialka, getID(stmtParish));
+                }
+            }
+        }
+    }
+
+    /**
+     * @param parish main priest in parish and setting Farar or Spravca farnosti accordint data in object parish
+     * @return get id of function in table FUNKCIA
+     */
+    public int setIdFunctionOfAdministrator(Parish parish) {
+        int id;
+        if (parish.getFunctionOfAdministrator() == 2) {
+            id = getIdOfFunction("Farar");
+        } else if (parish.getFunctionOfAdministrator() == 1) {
+            id = getIdOfFunction("Spravca farnosti");
+        } else id = getIdOfFunction("Farar");
+        return id;
+    }
+
+    /**
+     * @param statement we find out id of new data which we update to DB
+     * @return get ID of new data
+     * @throws SQLException in insertData we resolve SQL exception
+     */
+
+    public int getID(PreparedStatement statement) throws SQLException {
+        int id = 0;
+        ResultSet generatedKeys = statement.getGeneratedKeys();
+        int index = generatedKeys.findColumn("GENERATED_KEY");
+        if (generatedKeys.next()) {
+            id = generatedKeys.getInt(index);
+        }
+        return id;
+    }
+
+    /**
+     * @param con connection with DB
+     * @throws SQLException in insertData we resolve SQL exception
+     */
+
+    public void createFunctions(Connection con) throws SQLException {
+        List<String> functions = Arrays.asList("Farar", "Spravca farnosti", "Kaplan", "Duchovny Spravca", "naOdpocinku", "Vypomocny Duchovny");
+        String queryFunction = "INSERT INTO `FUNKCIA` (NAZOV) VALUES (?)";
+        try (PreparedStatement stmtFunction = con.prepareStatement(queryFunction)) {
+            for (String function : functions) {
+                stmtFunction.setString(1, function);
+                stmtFunction.executeUpdate();
+            }
+        }
+    }
+
+    /**
+     * @param function we find out id of function from table FUNKCIA
+     * @return get ID
+     */
+
+    public int getIdOfFunction(String function) {
+        String query = "SELECT ID FROM FUNKCIA WHERE NAZOV = ?";
+        int functionId = 0;
+        try (PreparedStatement stmt = con.prepareStatement(query)) {
+            stmt.setString(1, function);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                functionId = rs.getInt("ID");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return functionId;
+    }
+
+    /**
+     * @param statement in this statement we set new data
+     * @param nazov     first parameter
+     * @param id        second parameter
+     * @throws SQLException in insertData we resolve SQL exception
+     */
+
+    public void setIntSetStringAndExecute(PreparedStatement statement, String nazov, int id) throws SQLException {
+        statement.setString(1, nazov);
+        statement.setInt(2, id);
+        statement.executeUpdate();
+    }
+
+    @Override
+    public void getParishData() {
+
     }
 }
