@@ -6,20 +6,6 @@ import java.util.ArrayList;
 public class Parish {
     private String nameOfVillage;
 
-    @Override
-    public String toString() {
-        return "Parish{" +
-                "nameOfVillage='" + nameOfVillage + '\'' +
-                ", functionOfAdministrator=" + functionOfAdministrator +
-                ", filialky=" + filialky +
-                ", naOdpocinku=" + naOdpocinku +
-                ", jurisdikcneUzemie=" + jurisdikcneUzemie +
-                ", nameofSpravca='" + nameofSpravca + '\'' +
-                ", kaplani=" + kaplani +
-                ", vypomocnyDuchovny=" + vypomocnyDuchovny +
-                ", duchovnySpravca=" + duchovnySpravca +
-                '}';
-    }
 
     private int functionOfAdministrator;
 
@@ -32,6 +18,27 @@ public class Parish {
     }
 
     private ArrayList<String> filialky;
+
+    private String nameOfDistrict;
+
+    public String getNameOfDistrict() {
+        return nameOfDistrict;
+    }
+
+    public void setNameOfDistrict(String nameOfDistrict) {
+        this.nameOfDistrict = nameOfDistrict;
+    }
+
+    private String nameOfEparchy;
+
+    public String getNameOfEparchy() {
+        return nameOfEparchy;
+    }
+
+    public void setNameOfEparchy(String nameOfEparchy) {
+        this.nameOfEparchy = nameOfEparchy;
+    }
+
     private ArrayList<String> naOdpocinku;
     private ArrayList<String> jurisdikcneUzemie;
     private String nameofSpravca;
@@ -110,6 +117,23 @@ public class Parish {
 
     public void setVypomocnyDuchovny(ArrayList<String> vypomocnyDuchovny) {
         this.vypomocnyDuchovny = vypomocnyDuchovny;
+    }
+
+    @Override
+    public String toString() {
+        return "Parish{" +
+                "nameOfVillage='" + nameOfVillage + '\'' +
+                ", functionOfAdministrator=" + functionOfAdministrator +
+                ", filialky=" + filialky +
+                ", nameOfDistrict='" + nameOfDistrict + '\'' +
+                ", nameOfEparchy='" + nameOfEparchy + '\'' +
+                ", naOdpocinku=" + naOdpocinku +
+                ", jurisdikcneUzemie=" + jurisdikcneUzemie +
+                ", nameofSpravca='" + nameofSpravca + '\'' +
+                ", kaplani=" + kaplani +
+                ", vypomocnyDuchovny=" + vypomocnyDuchovny +
+                ", duchovnySpravca=" + duchovnySpravca +
+                '}';
     }
 }
 

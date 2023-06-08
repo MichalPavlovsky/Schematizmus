@@ -76,7 +76,7 @@ public class MySqlImplementor implements DatabaseImplementor {
      * @throws SQLException in insertData we resolve SQL exception
      */
     public void loadParishFeatures(ArrayList<String> arrayList, PreparedStatement stmtOsoba, PreparedStatement stmtFeature, PreparedStatement stmtParish, String functionOfName, Parish parish) throws SQLException {
-        if (arrayList != null && parish.getFilialky().isEmpty()) {
+        if (arrayList != null && !arrayList.isEmpty()) {
             for (String kaplan : arrayList) {
                 setIntSetStringAndExecute(stmtOsoba, kaplan, getIdOfFunction(functionOfName));
                 stmtFeature.setInt(1, getID(stmtOsoba));
@@ -113,7 +113,7 @@ public class MySqlImplementor implements DatabaseImplementor {
             stmtParish.executeUpdate();
             loadParishFeatures(parish.getKaplani(), stmtOsoba, stmtKaplan, stmtParish, "Kaplan", parish);
             loadParishFeatures(parish.getVypomocnyDuchovny(), stmtOsoba, stmtVypomocnyDuchovny, stmtParish, "Vypomocny Duchovny", parish);
-            if (parish.getFilialky() != null && parish.getFilialky().isEmpty()) {
+            if (parish.getFilialky() != null && !parish.getFilialky().isEmpty()) {
                 for (String filialka : parish.getFilialky()) {
                     setIntSetStringAndExecute(stmtFilialka, filialka, getID(stmtParish));
                 }
@@ -201,7 +201,59 @@ public class MySqlImplementor implements DatabaseImplementor {
     }
 
     @Override
-    public void getParishData() {
+    public void getParishData(String city) {
+        String querySelectId = "SELECT FARNOST.ID FROM FARNOST WHERE FARNOST.NAZOV = ?";
+        String querySelectParish = "SELECT FARNOST.NAZOV AS FARNOST, EPARCHIA.NAZOV AS EPARCHIA, PROTOPRESBYTERAT.NAZOV AS PROTOPRESBYTERAT, PRIEST.NAZOV AS PRIEST  " +
+                "FROM FARNOST " +
+                "JOIN PROTOPRESBYTERAT ON FARNOST.FK_PROTOPRESBYTERAT = PROTOPRESBYTERAT.ID " +
+                "JOIN EPARCHIA ON PROTOPRESBYTERAT.FK_EPARCHIA= EPARCHIA.ID " +
+                "JOIN OSOBA AS PRIEST ON PRIEST.ID = FARNOST.FK_OSOBA_SPRAVCA " +
+                "WHERE FARNOST.ID = ?";
+        String querySelectFilialka = "SELECT FILIALKA.NAZOV AS FILIALKA FROM FILIALKA JOIN FARNOST ON FARNOST.ID = FILIALKA.FK_FARNOST WHERE FARNOST.ID = ?";
+        String querySelectVypomocnyDuchovny = "SELECT OSOBA.NAZOV AS VYPOMOCNY \n" +
+                "FROM FARNOST\n" +
+                "JOIN VYPOMOCNYDUCHOVNY AS VYPOMOCNYD ON VYPOMOCNYD.FK_FARNOST = FARNOST.ID\n" +
+                "JOIN OSOBA ON OSOBA.ID = VYPOMOCNYD.FK_OSOBA\n" +
+                "WHERE FARNOST.ID = ?";
+        String querySelectKaplan = "SELECT OSOBA.NAZOV AS KAPLAN_OSOBA \n" +
+                "FROM FARNOST \n" +
+                "JOIN KAPLAN ON KAPLAN.FK_FARNOST = FARNOST.ID\n" +
+                "JOIN OSOBA ON OSOBA.ID = KAPLAN.FK_OSOBA\n" +
+                "WHERE FARNOST.ID = ?";
+        try {
+            int id = 0;
+            PreparedStatement stmtSelectId = con.prepareStatement(querySelectId);
+            PreparedStatement stmtSelectParish = con.prepareStatement(querySelectParish);
+            PreparedStatement stmtSelectFilialka = con.prepareStatement(querySelectFilialka);
+            PreparedStatement stmtSelectVypomocny = con.prepareStatement(querySelectVypomocnyDuchovny);
+            PreparedStatement stmtSelectKaplan = con.prepareStatement(querySelectKaplan);
+            stmtSelectId.setString(1, city);
+            ResultSet resultSet = stmtSelectId.executeQuery();
+            if (resultSet.next()) {
+                id = resultSet.getInt("ID");
+            } else System.out.println("Parish not found");
+            stmtSelectParish.setInt(1, id);
+            ResultSet rs = stmtSelectParish.executeQuery();
+            Parish parish = new Parish();
+            while (rs.next()) {
+                parish.setNameOfEparchy(rs.getString("EPARCHIA"));
+                parish.setNameOfDistrict(rs.getString("PROTOPRESBYTERAT"));
+                parish.setNameofSpravca(rs.getString("PRIEST"));
+            }
+            storeDataToParish(id, stmtSelectFilialka, parish.getFilialky(), "FILIALKA");
+            storeDataToParish(id, stmtSelectKaplan, parish.getKaplani(), "KAPLAN_OSOBA");
+            storeDataToParish(id, stmtSelectVypomocny, parish.getVypomocnyDuchovny(), "VYPOMOCNY");
+            parish.setNameOfVillage(city);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    private void storeDataToParish(int id, PreparedStatement statement, ArrayList<String> arrayList, String nameOfColumn) throws SQLException {
+        statement.setInt(1, id);
+        ResultSet rs = statement.executeQuery();
+        while (rs.next()) {
+            arrayList.add(rs.getString(nameOfColumn));
+        }
     }
 }
