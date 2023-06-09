@@ -201,7 +201,7 @@ public class MySqlImplementor implements DatabaseImplementor {
     }
 
     @Override
-    public void getParishData(String city) {
+    public Parish getParishData(String city) {
         String querySelectId = "SELECT FARNOST.ID FROM FARNOST WHERE FARNOST.NAZOV = ?";
         String querySelectParish = "SELECT FARNOST.NAZOV AS FARNOST, EPARCHIA.NAZOV AS EPARCHIA, PROTOPRESBYTERAT.NAZOV AS PROTOPRESBYTERAT, PRIEST.NAZOV AS PRIEST  " +
                 "FROM FARNOST " +
@@ -220,6 +220,7 @@ public class MySqlImplementor implements DatabaseImplementor {
                 "JOIN KAPLAN ON KAPLAN.FK_FARNOST = FARNOST.ID\n" +
                 "JOIN OSOBA ON OSOBA.ID = KAPLAN.FK_OSOBA\n" +
                 "WHERE FARNOST.ID = ?";
+        Parish parish = new Parish();
         try {
             int id = 0;
             PreparedStatement stmtSelectId = con.prepareStatement(querySelectId);
@@ -234,7 +235,7 @@ public class MySqlImplementor implements DatabaseImplementor {
             } else System.out.println("Parish not found");
             stmtSelectParish.setInt(1, id);
             ResultSet rs = stmtSelectParish.executeQuery();
-            Parish parish = new Parish();
+
             while (rs.next()) {
                 parish.setNameOfEparchy(rs.getString("EPARCHIA"));
                 parish.setNameOfDistrict(rs.getString("PROTOPRESBYTERAT"));
@@ -247,6 +248,12 @@ public class MySqlImplementor implements DatabaseImplementor {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return parish;
+    }
+
+    @Override
+    public Connection getConnection() {
+        return con;
     }
 
     private void storeDataToParish(int id, PreparedStatement statement, ArrayList<String> arrayList, String nameOfColumn) throws SQLException {
@@ -256,4 +263,5 @@ public class MySqlImplementor implements DatabaseImplementor {
             arrayList.add(rs.getString(nameOfColumn));
         }
     }
+
 }
