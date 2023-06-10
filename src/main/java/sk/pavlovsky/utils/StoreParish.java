@@ -18,6 +18,7 @@ public class StoreParish {
     ObjectMapper objectMapper;
     HashMap<String, HashMap<String, List<Parish>>> mapOfInformation;
     public static final String PATH = "src/main/resources/JsonView/out.json";
+    public static final String ENDPATH = "C:/Users/Public/schematizmus/out.json";
 
     public StoreParish(HashMap<String, HashMap<String, List<Parish>>> mapOfInformation) {
         this.mapOfInformation = mapOfInformation;
@@ -33,7 +34,7 @@ public class StoreParish {
             }
         }
         try {
-            objectMapper.writeValue(new File(PATH), rootNode);
+            objectMapper.writeValue(new File(ENDPATH), rootNode);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
