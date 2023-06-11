@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class GetKeWeb {
+    public static final String ENDPATH = "C:/Users/Public/schematizmus/webs/KE/";
 
     public void downloadKeWebs() {
         String fileNames = "KE";
@@ -37,7 +38,7 @@ public class GetKeWeb {
                             String web = parts[1];
                             String fileName = parts[0] + ".html";
                             String updateName = district.replaceAll(".txt", "");
-                            String savePlace = "src/main/resources/webs/KE/" + updateName;
+                            String savePlace = ENDPATH + updateName;
                             try {
                                 Document doc = Jsoup.connect(web).get();
                                 Path directoryPath = Paths.get(String.valueOf(savePlace));

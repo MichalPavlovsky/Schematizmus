@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class GetPoWeb {
+    public static final String ENDPATH = "C:/Users/Public/schematizmus/webs/PO/";
 
     public void downloadPoWebs() {
         String fileNames = "PO";
@@ -38,7 +39,7 @@ public class GetPoWeb {
                             String web = parts[0];
                             String fileName = parts[1] + ".html";
                             String updateName = district.replaceAll(".lst", "");
-                            String saveDirectory = "src/main/resources/webs/PO/" + updateName;
+                            String saveDirectory = ENDPATH + updateName;
                             try {
                                 Document doc = Jsoup.connect(web).get();
                                 Path directoryPath = Paths.get(saveDirectory);

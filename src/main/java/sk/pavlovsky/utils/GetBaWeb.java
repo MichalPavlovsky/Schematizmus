@@ -11,6 +11,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class GetBaWeb {
+    public static final String ENDPATH = "C:/Users/Public/schematizmus/webs/BA/";
+
     public void downloadBaWebs(){
         String filePlace = "BA/hallEparchy.lst";
         URL url = getClass().getClassLoader().getResource(filePlace);
@@ -23,7 +25,7 @@ public class GetBaWeb {
                 if (parts.length >= 2) {
                     String web = parts[0];
                     String fileName = parts[1] + ".html";
-                    String saveDirectory = "src/main/resources/webs/BA";
+                    String saveDirectory = ENDPATH;
                     try {
                         Document doc = Jsoup.connect(web).get();
                         Path directoryPath = Paths.get(saveDirectory);
